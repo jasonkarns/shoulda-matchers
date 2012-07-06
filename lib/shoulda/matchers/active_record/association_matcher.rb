@@ -231,12 +231,15 @@ module Shoulda # :nodoc:
         end
 
         def class_has_foreign_key?(klass)
-          if klass.column_names.include?(foreign_key)
-            true
-          else
-            @missing = "#{klass} does not have a #{foreign_key} foreign key."
-            false
-          end
+          errors = Array(foreign_key).map do |foreign_key|
+            unless klass.column_names.include?(foreign_key.to_s)
+              @missing = "#{klass} does not have a #{foreign_key} foreign key."
+            end
+          end.compact!
+
+          @missing = errors.join("\n") unless errors.empty?
+
+          errors.empty?
         end
 
         def model_class
